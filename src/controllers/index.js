@@ -3,11 +3,19 @@ var models = require('../models'); //pull in our models. This will automatically
 
 //get the Cat model 
 var Cat = models.Cat.CatModel;
+// get the Dog model
+var Dog = models.Dog.DogModel;
 
 //default fake data so that we have something to work with until we make a real Cat
 var defaultData = {
     name: "unknown", 
     bedsOwned: 0
+};
+// default Dog data
+var defaultDog = {
+	name: "unknown",
+	breed: "unknown",
+	age: 0
 };
 
 //object for us to keep track of the last Cat we made and dynamically update it sometimes
@@ -143,6 +151,35 @@ var setName = function(req, res) {
         return res.json({name: name});
     });
 };
+// handles a request to set a dog
+var setDog = function(req, res) {
+    
+    //check if the required fields exist
+    if(!req.body.name || !req.body.breed || !req.body.age) {
+        //if not respond with a 400 error
+        return res.status(400).json({error: "Name, breed, and age are all required."});
+    }
+    
+    //dummy JSON to insert into database
+    var dogData = {
+        name: req.body.name,
+        breed: req.body.breed,
+		age: req.body.age
+    };
+
+    //create a new object of DogModel with the object to save
+    var newDog = new Dog(dogData);
+    
+    //Save the newDog object to the database
+    newDog.save(function(err) {
+        if(err) {
+            return res.json({err:err}); //if error, return it
+        }
+        
+        //return success
+        return res.json({name: req.body.name});
+    });
+};
 
 
 //function to handle requests search for a name and return the object
@@ -180,6 +217,39 @@ var searchName = function(req,res) {
         return res.json({name: doc.name, beds: doc.bedsOwned});
     });
   
+};
+//function to handle requests search for a dog and return the object
+var findDog = function(req,res) {
+
+    //check if there is a query parameter for name
+    if(!req.query.name) {
+        return res.json({error: "Name is required to perform a search."});
+    }
+  
+    // Call our Dog's static findByName function
+    Dog.findByName(req.query.name, function(err, doc) {
+        //errs, handle them
+        if(err) {
+            return res.json({err:err}); //if error, return it            
+        }
+        
+        //if no matches, let them know
+        if(!doc) {
+            return res.json({error: "No dogs found."});
+        }
+        
+		// increment the dog's age and save
+		doc.age++;
+		
+		doc.save(function(err) {
+			if (err) {
+				return res.json({err: err});
+			}
+		});
+		
+        //if a match, send the match back
+        return res.json({name: doc.name, breed: doc.breed, age: doc.age});
+    });
 };
 
 //function to handle a request to update the last added object
@@ -225,7 +295,9 @@ module.exports = {
     page3: hostPage3, 
     getName: getName,
     setName: setName,
+	setDog: setDog,
     updateLast: updateLast,
     searchName: searchName,
+	findDog: findDog,
     notFound: notFound
 };

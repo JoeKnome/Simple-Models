@@ -17,6 +17,7 @@ var router = function(app) { //pass the express app in
     app.get('/page3', controllers.page3);
     app.get('/getName', controllers.getName);
     app.get('/findByName', controllers.searchName);
+	app.get('/findDog', controllers.findDog);
     
     //whenever someone goes to the site without a path (AKA the home page), call controllers.index
     //For example www.webpage.com
@@ -28,6 +29,7 @@ var router = function(app) { //pass the express app in
     //When someone POSTS to /setName, call controllers.setName
     //For example, a form submission to www.webpage.com/setName
     app.post('/setName', controllers.setName);
+	app.post('/setDog', controllers.setDog);
     
     //When someone POSTS to /updateLast, call controllers.updateLast
     app.post('/updateLast', controllers.updateLast);
